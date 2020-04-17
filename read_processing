@@ -1,0 +1,32 @@
+#!/bin/bash
+
+# if necessary, combine reads from separate sequencing runs
+
+cat  <sample>.lane1.R1.fastq.gz  <sample>.lane2.R1.fastq.gz  >  <sample>.R1.fastq.gz
+cat  <sample>.lane1.R2.fastq.gz  <sample>.lane2.R2.fastq.gz  >  <sample>.R2.fastq.gz
+
+# Adapter removal
+
+NGmerge \
+-a \
+-e 20 \
+-n 4 \
+-1 <sample>.R1.fastq.gz \
+-2 <sample>.R2.fastq.gz \
+-o <sample>_trimmed
+
+# will output two files: <sample>_trimmed.R1.fastq.gz and <sample>_trimmed.R2.fastq.gz
+
+# index genome of interest
+
+bowtie2-build <genome>.fasta <build_name>
+
+# Align to genome
+
+bowtie2 -x <build_name> \
+-X 2000 \
+-1 <sample>_trimmed.R1.fastq.gz \
+-2 <sample>_trimmed.R2.fastq.gz \
+-p 31 | samtools view -b -S - | samtools sort - outfilename
+
+samtools index outfilename.bam
