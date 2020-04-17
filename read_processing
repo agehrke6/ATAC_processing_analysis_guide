@@ -5,6 +5,7 @@
 cat  <sample>.lane1.R1.fastq.gz  <sample>.lane2.R1.fastq.gz  >  <sample>.R1.fastq.gz
 cat  <sample>.lane1.R2.fastq.gz  <sample>.lane2.R2.fastq.gz  >  <sample>.R2.fastq.gz
 
+---------------------------------------------------------------------------------------------------------------------
 # Adapter removal
 
 NGmerge \
@@ -16,6 +17,7 @@ NGmerge \
 -o <sample>_trimmed
 
 # will output two files: <sample>_trimmed.R1.fastq.gz and <sample>_trimmed.R2.fastq.gz
+---------------------------------------------------------------------------------------------------------------------
 
 # index genome of interest
 
@@ -27,6 +29,38 @@ bowtie2 -x <build_name> \
 -X 2000 \
 -1 <sample>_trimmed.R1.fastq.gz \
 -2 <sample>_trimmed.R2.fastq.gz \
--p 31 | samtools view -b -S - | samtools sort - outfilename
+-p 31 | samtools view -b -S - | samtools sort - <sample>
 
-samtools index outfilename.bam
+samtools index <sample>.bam
+---------------------------------------------------------------------------------------------------------------------
+
+# remove duplicate reads
+
+java -jar picard.jar MarkDuplicates \
+I=<sample>.bam \
+O=<sample>_nodups.bam \
+M=<sample>_dups.txt \
+REMOVE_DUPLICATES=true \
+VALIDATION_STRINGENCY=LENIENT
+
+---------------------------------------------------------------------------------------------------------------------
+
+# remove multi-mapped reads
+
+samtools view -h -q 30 <sample>_nodups.bam > <sample>_nodups_nomulti.bam
+
+samtools index <sample>_nodups_nomulti.bam
+
+---------------------------------------------------------------------------------------------------------------------
+
+# retain only properly-paired reads
+# try analysis without this step if you end up with too few mapped reads in the end
+
+samtools view -h -b -F 1804 -f 2 <sample>_nodups_nomulti.bam > <sample>_nodups_nomulti_filtered.bam
+
+samtools index <sample>_nodups_nomulti_filtered.bam
+
+
+
+
+
