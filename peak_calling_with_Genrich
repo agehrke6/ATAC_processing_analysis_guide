@@ -16,6 +16,7 @@ Genrich \
 ---------------------------------------------------------------------------------------------------------------------
 
 # run IDR on two replicates to get reproducible peaks
+# https://github.com/kundajelab/idr/
 # this is assuming you have two replicates run through the previous commands, now sample_1 and sample_2
 # Alternatively, Genrich can also handle handle replicates and create a consensus, see the Genrich documentation
 
